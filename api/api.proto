@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+service Aggregator {
+	rpc Publish (stream PublishRequest) returns (PublishResponse) {}
+}
+
+message PublishRequest {
+	int64 timeNs = 1;
+	float cpuUsage = 3;
+}
+
+message PublishResponse {
+}

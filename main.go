@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 	"github.com/aptible/mini-collector/collector"
+	"github.com/aptible/mini-collector/publisher"
 )
 
 func main() {
@@ -25,22 +26,33 @@ func main() {
 
 		for {
 			point, lastState = c.GetPoint(lastState)
-			time.Sleep(1000 * time.Millisecond)
 			value.Store(point)
 
 			select {
 			case readyChan <- nil:
+				fmt.Println("pusher ok")
 			default:
 				// TODO: Better logging
 				fmt.Println("pusher falling behind")
 			}
 
+			time.Sleep(1000 * time.Millisecond)
 		}
 	}()
 
+	// TODO: better error handling here / needs to be in a retry loop
+	publisher, err := publisher.Open()
+	if err != nil {
+		fmt.Printf("failed to create publisher: %+v", err)
+		return
+	}
+
+	// defer publisher.Close() // TODO
+
 	for {
 		<-readyChan
-		foo := value.Load()
-		fmt.Printf("%+v\n", foo)
+		fmt.Printf("wake up\n")
+		point := value.Load().(collector.Point)
+		publisher.Publish(point)
 	}
 }
