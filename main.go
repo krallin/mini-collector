@@ -1,58 +1,89 @@
 package main
 
 import (
-	"sync/atomic"
-	"fmt"
-	"time"
 	"github.com/aptible/mini-collector/collector"
 	"github.com/aptible/mini-collector/publisher"
+	log "github.com/sirupsen/logrus"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
+const (
+	publisherBufferSize = 10
+	pollInterval        = 2 * time.Second
+)
+
+func getEnvOrFatal(k string) string {
+	val, ok := os.LookupEnv(k)
+	if !ok {
+		log.Fatalf("%s must be set", k)
+	}
+	return val
+}
+
 func main() {
-	// TODO: Need to push to remote
-	// TODO: Need to have an ID on the stats to never push the same again (maybe just a timestamp - we need that anyway)
 	// TODO: Volumes / configuration
 	// TODO: Throttling stats
 	// TODO: Handle sigterm / sigint
+	termChan := make(chan os.Signal, 1)
+	signal.Notify(termChan, syscall.SIGINT, syscall.SIGTERM)
 
-	var value atomic.Value
-	readyChan := make(chan interface{}, 1)
+	serverAddress := getEnvOrFatal("MINI_COLLECTOR_REMOTE_ADDRESS")
+	containerId := getEnvOrFatal("MINI_COLLECTOR_CONTAINER_ID")
+	environmentName := getEnvOrFatal("MINI_COLLECTOR_ENVIRONMENT_NAME")
+	serviceName := getEnvOrFatal("MINI_COLLECTOR_SERVICE_NAME")
 
-	go func() {
-		var point collector.Point
-		lastState := collector.MakeNoContainerState()
-
-		c := collector.NewCollector("1f58a43e2863fd73aebdf09a7dae6c47983af8fd7523a048e4b9bddcd4ee6f2f")
-
-		for {
-			point, lastState = c.GetPoint(lastState)
-			value.Store(point)
-
-			select {
-			case readyChan <- nil:
-				fmt.Println("pusher ok")
-			default:
-				// TODO: Better logging
-				fmt.Println("pusher falling behind")
-			}
-
-			time.Sleep(1000 * time.Millisecond)
-		}
-	}()
-
-	// TODO: better error handling here / needs to be in a retry loop
-	publisher, err := publisher.Open()
-	if err != nil {
-		fmt.Printf("failed to create publisher: %+v", err)
-		return
+	tags := map[string]string{
+		"environment": environmentName,
+		"service":     serviceName,
+		"container":   containerId,
 	}
 
-	// defer publisher.Close() // TODO
+	appName, ok := os.LookupEnv("MINI_COLLECTOR_APP_NAME")
+	if ok {
+		tags["appName"] = appName
+	}
 
+	databaseName, ok := os.LookupEnv("MINI_COLLECTOR_DATABASE_NAME")
+	if ok {
+		tags["databaseName"] = databaseName
+	}
+
+	_, debug := os.LookupEnv("MINI_COLLECTOR_DEBUG")
+	if debug {
+		log.SetLevel(log.DebugLevel)
+	}
+
+	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
+
+	publisher := publisher.Open(
+		serverAddress,
+		tags,
+		2,
+	)
+
+	c := collector.NewCollector(containerId)
+
+	lastState := collector.MakeNoContainerState()
+
+MainLoop:
 	for {
-		<-readyChan
-		fmt.Printf("wake up\n")
-		point := value.Load().(collector.Point)
-		publisher.Publish(point)
+		select {
+		case <-time.After(time.Until(lastState.Time.Add(pollInterval))):
+			var point collector.Point
+			point, lastState = c.GetPoint(lastState)
+			err := publisher.Queue(lastState.Time, point)
+			if err != nil {
+				log.Warnf("publisher is failling behind: %v", err)
+			}
+		case <-termChan:
+			// Exit
+			log.Infof("exiting")
+			break MainLoop
+		}
 	}
+
+	publisher.Close()
 }

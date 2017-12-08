@@ -34,7 +34,6 @@ func NewCollector(dockerName string) Collector {
 	}
 }
 
-
 func (c *collector) GetPoint(lastState State) (Point, State) {
 	for _, subsys := range c.subsystems {
 		cgPath := fmt.Sprintf("/sys/fs/cgroup/%s/docker/%s", subsys.Name(), c.dockerName)
@@ -51,13 +50,13 @@ func (c *collector) GetPoint(lastState State) (Point, State) {
 
 	accumulatedCpuUsage := c.statsBuffer.CpuStats.CpuUsage.TotalUsage
 
-	var cpuUsage float64
+	var milliCpuUsage uint64
 	if accumulatedCpuUsage > lastState.AccumulatedCpuUsage {
 		elapsedCpu := float64(accumulatedCpuUsage - lastState.AccumulatedCpuUsage)
 		elapsedTime := float64(pollTime.Sub(lastState.Time).Nanoseconds())
-		cpuUsage = elapsedCpu / elapsedTime
+		milliCpuUsage = uint64(1000 * elapsedCpu / elapsedTime)
 	} else {
-		cpuUsage = 0
+		milliCpuUsage = 0
 	}
 
 	baseRssMemory := c.statsBuffer.MemoryStats.Stats["rss"]
@@ -66,7 +65,7 @@ func (c *collector) GetPoint(lastState State) (Point, State) {
 	limitMemory := c.statsBuffer.MemoryStats.Usage.Limit
 
 	point := Point{
-		CpuUsage:      cpuUsage,
+		MilliCpuUsage: milliCpuUsage,
 		MemoryTotalMb: virtualMemory / MbInBytes,
 		MemoryRssMb:   (baseRssMemory + mappedFileMemory) / MbInBytes,
 		MemoryLimitMb: (limitMemory) / MbInBytes,

@@ -2,12 +2,6 @@
 
 
 [[projects]]
-  name = "github.com/Sirupsen/logrus"
-  packages = ["."]
-  revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
-  version = "v1.0.4"
-
-[[projects]]
   name = "github.com/docker/go-units"
   packages = ["."]
   revision = "0dadbb0345b35ec7ef35e228dabb8de89a65bf52"
@@ -22,8 +16,14 @@
 [[projects]]
   name = "github.com/opencontainers/runc"
   packages = ["libcontainer/cgroups","libcontainer/cgroups/fs","libcontainer/configs","libcontainer/system","libcontainer/utils"]
-  revision = "baf6536d6259209c3edfa2b22237af82942d3dfa"
-  version = "v0.1.1"
+  revision = "1a124e9c2da68c867ed2c4f4ff19f0cd95cda0cd"
+  version = "v0.0.8"
+
+[[projects]]
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
+  version = "v1.0.4"
 
 [[projects]]
   branch = "master"
@@ -64,6 +64,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f1100a487e3af1f8558f0cd1cc0d4a6b424c4f596a3505a6f02cb51c90a6e64b"
+  inputs-digest = "48932d5144c932a1ff0fc2462ac4eccf5f8ed01cb5f64f9fa84d2e94de8dc2ea"
   solver-name = "gps-cdcl"
   solver-version = 1

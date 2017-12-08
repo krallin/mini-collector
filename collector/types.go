@@ -5,7 +5,7 @@ import (
 )
 
 type Point struct {
-	CpuUsage      float64 // TODO
+	MilliCpuUsage uint64
 	MemoryTotalMb uint64
 	MemoryRssMb   uint64
 	MemoryLimitMb uint64

@@ -1,12 +1,16 @@
 syntax = "proto3";
 
 service Aggregator {
-	rpc Publish (stream PublishRequest) returns (PublishResponse) {}
+	rpc Publish (PublishRequest) returns (PublishResponse) {}
 }
 
 message PublishRequest {
-	int64 timeNs = 1;
-	float cpuUsage = 3;
+	uint64 unix_time = 1;
+	uint64 milli_cpu_usage = 2;
+	uint64 memory_total_mb = 3;
+	uint64 memory_rss_mb = 4;
+	uint64 memory_limit_mb = 5;
+	bool running = 6;
 }
 
 message PublishResponse {
