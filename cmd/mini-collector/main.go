@@ -12,7 +12,8 @@ import (
 
 const (
 	publisherBufferSize = 10
-	pollInterval        = 2 * time.Second
+	// pollInterval        = 2 * time.Second // TODO
+	pollInterval = 2000 * time.Millisecond // TODO
 )
 
 func getEnvOrFatal(k string) string {
@@ -26,7 +27,6 @@ func getEnvOrFatal(k string) string {
 func main() {
 	// TODO: Volumes / configuration
 	// TODO: Throttling stats
-	// TODO: Handle sigterm / sigint
 	termChan := make(chan os.Signal, 1)
 	signal.Notify(termChan, syscall.SIGINT, syscall.SIGTERM)
 
@@ -43,12 +43,12 @@ func main() {
 
 	appName, ok := os.LookupEnv("MINI_COLLECTOR_APP_NAME")
 	if ok {
-		tags["appName"] = appName
+		tags["app"] = appName
 	}
 
 	databaseName, ok := os.LookupEnv("MINI_COLLECTOR_DATABASE_NAME")
 	if ok {
-		tags["databaseName"] = databaseName
+		tags["database"] = databaseName
 	}
 
 	_, debug := os.LookupEnv("MINI_COLLECTOR_DEBUG")
@@ -61,7 +61,7 @@ func main() {
 	publisher := publisher.Open(
 		serverAddress,
 		tags,
-		2,
+		20,
 	)
 
 	c := collector.NewCollector(containerId)

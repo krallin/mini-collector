@@ -7,7 +7,7 @@ deps:
 
 .PHONY: build
 build: $(GOFILES)
-	go build
+	go list ./...  | grep cmd | xargs -P $$(nproc) -n 1 go build -i
 
 .PHONY: unit
 unit:

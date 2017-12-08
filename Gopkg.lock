@@ -10,8 +10,14 @@
 [[projects]]
   branch = "master"
   name = "github.com/golang/protobuf"
-  packages = ["proto","ptypes","ptypes/any","ptypes/duration","ptypes/timestamp"]
+  packages = ["proto","protoc-gen-go/descriptor","ptypes","ptypes/any","ptypes/duration","ptypes/timestamp"]
   revision = "1e59b77b52bf8e4b449a57e6f79f21226d571845"
+
+[[projects]]
+  name = "github.com/influxdata/influxdb"
+  packages = ["client/v2","models","pkg/escape"]
+  revision = "6d2685d1738277a1c2672fc58df7994627769be6"
+  version = "v1.4.2"
 
 [[projects]]
   name = "github.com/opencontainers/runc"
@@ -57,13 +63,13 @@
 
 [[projects]]
   name = "google.golang.org/grpc"
-  packages = [".","balancer","balancer/roundrobin","codes","connectivity","credentials","encoding","grpclb/grpc_lb_v1/messages","grpclog","internal","keepalive","metadata","naming","peer","resolver","resolver/dns","resolver/manual","resolver/passthrough","stats","status","tap","transport"]
+  packages = [".","balancer","balancer/roundrobin","codes","connectivity","credentials","encoding","grpclb/grpc_lb_v1/messages","grpclog","internal","keepalive","metadata","naming","peer","reflection","reflection/grpc_reflection_v1alpha","resolver","resolver/dns","resolver/manual","resolver/passthrough","stats","status","tap","transport"]
   revision = "be077907e29fdb945d351e4284eb5361e7f8924e"
   version = "v1.8.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "48932d5144c932a1ff0fc2462ac4eccf5f8ed01cb5f64f9fa84d2e94de8dc2ea"
+  inputs-digest = "14e1868bdcca95eb425e55e762c749763ed3b452db446958f762aa671477b8bb"
   solver-name = "gps-cdcl"
   solver-version = 1

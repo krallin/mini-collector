@@ -64,7 +64,13 @@ func (p *Publisher) startConnection(ctx context.Context) {
 	connection, err := func() (*grpc.ClientConn, error) {
 		dialCtx, cancel := context.WithTimeout(ctx, p.connectTimeout)
 		defer cancel()
-		return grpc.DialContext(dialCtx, p.serverAddress, grpc.WithInsecure(), grpc.WithBlock())
+		return grpc.DialContext(
+			dialCtx,
+			p.serverAddress,
+			grpc.WithInsecure(),
+			grpc.WithBlock(),
+			grpc.WithBackoffMaxDelay(5*time.Second),
+		)
 	}()
 
 	if err != nil {
