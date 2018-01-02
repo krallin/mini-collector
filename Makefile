@@ -22,6 +22,10 @@ api/api.proto .codegen/emit.py \
 api/api.pb.go: api/api.proto
 	protoc -I api/ api/api.proto --go_out=plugins=grpc:api
 
+.PHONY: gofiles
+src: $(GOFILES_NOVENDOR) fmt
+	@true
+
 .PHONY: unit
 unit: $(GOFILES_NOVENDOR)
 	go test $$(go list ./... | grep -v /vendor/)
